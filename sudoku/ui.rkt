@@ -18,6 +18,9 @@
 (define highlight-color (make-object color% 255 244 180))
 (define selected-color (make-object color% 255 224 102))
 
+;; pen% expects a color object, not a gray level integer
+(define (gray-level n) (make-object color% n n n))
+
 (define (cell-index x y)
   (define c (quotient (- x margin) cell-size))
   (define r (quotient (- y margin) cell-size))
@@ -77,7 +80,7 @@
       (draw-cells dc))
     (define/private (draw-highlights dc)
       (when selected
-        (send dc set-pen (make-object pen% 0 'transparent))
+        (send dc set-pen (make-object pen% (gray-level 0) 'transparent))
         (send dc set-brush (make-object brush% highlight-color 'solid))
         (for ([p (in-list (peers-of selected))])
           (send dc draw-rectangle
@@ -94,10 +97,10 @@
         (define thick? (zero? (remainder k 3)))
         (define w (if thick? 2 1))
         (define pos (+ margin (* k cell-size)))
-        (send dc set-pen (make-object pen% (if thick? 0 160) w 'solid))
+        (send dc set-pen (make-object pen% (gray-level (if thick? 0 160)) w 'solid))
         (send dc draw-line pos margin pos (+ margin (* 9 cell-size)))
         (send dc draw-line margin pos (+ margin (* 9 cell-size)) pos))
-      (send dc set-pen (make-object pen% 0 2 'solid))
+      (send dc set-pen (make-object pen% (gray-level 0) 2 'solid))
       (send dc draw-rectangle margin margin (* 9 cell-size) (* 9 cell-size)))
     (define/private (draw-cells dc)
       (define big-font (make-object font% 22 'default 'normal 'bold))

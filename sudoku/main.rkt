@@ -1,12 +1,18 @@
 #lang racket
 
-(require "grid.rkt"
+(require racket/runtime-path
+         "grid.rkt"
          "solver.rkt"
          "generator.rkt"
          "complexity.rkt")
 
+;; Anchor the UI module to this file's directory so `racket sudoku/main.rkt ui`
+;; works from any working directory; dynamic-require keeps the GUI toolkit
+;; loaded lazily, so plain CLI commands never need a display.
+(define-runtime-path ui-module "ui.rkt")
+
 (define (launch-ui)
-  ((dynamic-require "ui.rkt" 'launch-ui)))
+  ((dynamic-require ui-module 'launch-ui)))
 
 (define (usage)
   (displayln "Usage:
