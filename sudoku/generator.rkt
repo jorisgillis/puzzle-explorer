@@ -29,13 +29,9 @@
   (fill 0)
   g)
 
-(define (generate-puzzle difficulty)
-  (define target (difficulty-givens difficulty))
-  (define solution (generate-complete-grid))
+(define (remove-clues solution target order)
   (define puzzle (grid-copy solution))
   (define (givens) (count (lambda (v) (not (zero? v))) (vector->list puzzle)))
-  (define order
-    (shuffle (for/list ([i (in-range 41)]) (cons i (- cell-count 1 i)))))
   (for ([pair (in-list order)]
         #:break (<= (givens) target))
     (for ([i (in-list (remove-duplicates (list (car pair) (cdr pair))))])
@@ -44,4 +40,16 @@
         (grid-set! puzzle i 0)
         (unless (= (count-solutions puzzle 2) 1)
           (grid-set! puzzle i saved)))))
-  (values puzzle solution))
+  puzzle)
+
+(define (generate-puzzle difficulty)
+  (define target (difficulty-givens difficulty))
+  (define solution (generate-complete-grid))
+  (define pairs (for/list ([i (in-range 41)]) (cons i (- cell-count 1 i))))
+  (define (givens g) (count (lambda (v) (not (zero? v))) (vector->list g)))
+  (define best
+    (for/fold ([best (remove-clues solution target (shuffle pairs))])
+              ([attempt (in-range 10)])
+      (define candidate (remove-clues solution target (shuffle pairs)))
+      (if (< (givens candidate) (givens best)) candidate best)))
+  (values best solution))
