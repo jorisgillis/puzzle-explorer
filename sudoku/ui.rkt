@@ -80,7 +80,7 @@
       (draw-cells dc))
     (define/private (draw-highlights dc)
       (when selected
-        (send dc set-pen (make-object pen% (gray-level 0) 'transparent))
+        (send dc set-pen (make-object pen% (gray-level 0) 1 'transparent))
         (send dc set-brush (make-object brush% highlight-color 'solid))
         (for ([p (in-list (peers-of selected))])
           (send dc draw-rectangle
@@ -100,6 +100,7 @@
         (send dc set-pen (make-object pen% (gray-level (if thick? 0 160)) w 'solid))
         (send dc draw-line pos margin pos (+ margin (* 9 cell-size)))
         (send dc draw-line margin pos (+ margin (* 9 cell-size)) pos))
+      (send dc set-brush (make-object brush% (gray-level 0) 'transparent))
       (send dc set-pen (make-object pen% (gray-level 0) 2 'solid))
       (send dc draw-rectangle margin margin (* 9 cell-size) (* 9 cell-size)))
     (define/private (draw-cells dc)
