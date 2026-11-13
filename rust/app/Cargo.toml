@@ -1,0 +1,10 @@
+[package]
+name = "sudoku"
+version = "0.1.0"
+edition = "2024"
+description = "egui GUI + CLI app for the Rust sudoku implementation"
+
+[dependencies]
+sudoku-core = { path = "../core" }
+clap = { version = "4", features = ["derive"] }
+eframe = "0.37"
