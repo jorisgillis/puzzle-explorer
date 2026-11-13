@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "source": "Extracted from the Racket test suite + CLI by wayfinder ticket #11 (branch research/parity-fixtures, file research/parity-fixtures.md). Deterministic for solve/analyze/count_solutions/propagate.",
+  "grid_facts": {
+    "cell_count": 81,
+    "peers_of_cell_0": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 19, 20, 27, 36, 45, 54, 63, 72],
+    "box_of": { "0": 0, "40": 4, "80": 8 }
+  },
+  "puzzles": [
+    {
+      "id": "readme",
+      "input": "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+      "solve": {
+        "solution": "534678912672195348198342567859761423426853791713924856961537284287419635345286179",
+        "nodes": 52,
+        "max_depth": 51
+      },
+      "count_solutions_cap2": 1,
+      "count_solutions_cap3": 1,
+      "propagate_filled": 51,
+      "analysis": {
+        "givens": 30, "empty_cells": 51, "total_candidates": 153,
+        "candidate_entropy_bits": 75.17318120275553,
+        "propagated": 51, "solver_nodes": 52, "max_depth": 51,
+        "unique": true, "solvable": true, "difficulty": 26
+      }
+    },
+    {
+      "id": "solved",
+      "input": "534678912672195348198342567859761423426853791713924856961537284287419635345286179",
+      "solve": {
+        "solution": "534678912672195348198342567859761423426853791713924856961537284287419635345286179",
+        "nodes": 1,
+        "max_depth": 0
+      },
+      "count_solutions_cap2": 1,
+      "count_solutions_cap3": 1,
+      "propagate_filled": 0,
+      "analysis": {
+        "givens": 81, "empty_cells": 0, "total_candidates": 0,
+        "candidate_entropy_bits": 0.0,
+        "propagated": 0, "solver_nodes": 1, "max_depth": 0,
+        "unique": true, "solvable": true, "difficulty": 0
+      }
+    },
+    {
+      "id": "empty",
+      "input": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "solve": {
+        "solution": "123456789456789123789123456231674895875912364694538217317265948542897631968341572",
+        "nodes": 82,
+        "max_depth": 81
+      },
+      "count_solutions_cap2": 2,
+      "count_solutions_cap3": 3,
+      "propagate_filled": 0,
+      "analysis": {
+        "givens": 0, "empty_cells": 81, "total_candidates": 729,
+        "candidate_entropy_bits": 256.7639251168277,
+        "propagated": 0, "solver_nodes": 82, "max_depth": 81,
+        "unique": false, "solvable": true, "difficulty": 41
+      }
+    },
+    {
+      "id": "unsolvable-11",
+      "input": "110000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "solve": { "solution": null, "nodes": 0, "max_depth": 0 },
+      "count_solutions_cap2": 0,
+      "count_solutions_cap3": 0,
+      "propagate_filled": 0,
+      "analysis": {
+        "givens": 2, "empty_cells": 79, "total_candidates": 686,
+        "candidate_entropy_bits": 246.17595007788515,
+        "propagated": 0, "solver_nodes": 0, "max_depth": 0,
+        "unique": false, "solvable": false, "difficulty": 39
+      }
+    },
+    {
+      "id": "row1-filled",
+      "input": "123456789000000000000000000000000000000000000000000000000000000000000000000000000",
+      "solve": {
+        "solution": "123456789456789123789123456231674895875912364694538217317265948542897631968341572",
+        "nodes": 73,
+        "max_depth": 72
+      },
+      "count_solutions_cap2": 2,
+      "count_solutions_cap3": 3,
+      "propagate_filled": 0,
+      "analysis": {
+        "givens": 9, "empty_cells": 72, "total_candidates": 540,
+        "candidate_entropy_bits": 208.5293250129808,
+        "propagated": 0, "solver_nodes": 73, "max_depth": 72,
+        "unique": false, "solvable": true, "difficulty": 36
+      }
+    },
+    {
+      "id": "hard-17",
+      "input": "800000000003600000070090200050007000000045700000100030001000068008500010090000400",
+      "solve": {
+        "solution": "812753649943682175675491283154237896369845721287169534521974368438526917796318452",
+        "nodes": 10102,
+        "max_depth": 60
+      },
+      "count_solutions_cap2": 1,
+      "count_solutions_cap3": 1,
+      "propagate_filled": 0,
+      "analysis": {
+        "givens": 21, "empty_cells": 60, "total_candidates": 254,
+        "candidate_entropy_bits": 122.85042932917997,
+        "propagated": 0, "solver_nodes": 10102, "max_depth": 60,
+        "unique": true, "solvable": true, "difficulty": 90
+      }
+    },
+    {
+      "id": "escargot",
+      "input": "100007090030020008009600500005300900010080002600004000300000010040000007007000300",
+      "solve": {
+        "solution": "162857493534129678789643521475312986913586742628794135356478219241935867897261354",
+        "nodes": 218,
+        "max_depth": 58
+      },
+      "count_solutions_cap2": 1,
+      "count_solutions_cap3": 1,
+      "propagate_filled": 1,
+      "analysis": {
+        "givens": 23, "empty_cells": 58, "total_candidates": 223,
+        "candidate_entropy_bits": 109.8206233904025,
+        "propagated": 1, "solver_nodes": 218, "max_depth": 58,
+        "unique": true, "solvable": true, "difficulty": 31
+      }
+    }
+  ],
+  "known_quirks": [
+    "Racket count-solutions uses for/and, aborting the whole candidate loop on the first dead-end branch: it returns 0 for solvable unique puzzles (hard-17, escargot) and undercounts row1-filled at cap 3 (Racket reports 2). Rust implements the correct capped counting (unique=true, count_solutions_cap2=1, row1-filled cap3=3 above) — a deliberate, documented divergence."
+  ]
+}
