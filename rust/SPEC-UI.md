@@ -57,10 +57,11 @@ see #9).
    - else `current[i] > 0` (user entry): conflict = any peer `p != i` with
      `current[p] == current[i] > 0`; draw digit in error color if conflict,
      else user color; centered.
-   - else if pencils shown: draw `candidates(current, i)` as pencil marks —
-     small gray font, 3x3 mini-grid inside the cell (`mini = cell-size/3 =
-     16` px), candidate value `v` at position `v-1` in row-major order
-     (1 top-left … 9 bottom-right), centered in its mini-cell.
+   - else if pencils shown: draw `candidates(current, i)` (ascending 1..9)
+     as pencil marks — small gray font, 3x3 mini-grid inside the cell
+     (`mini = cell-size/3 = 16` px); the k-th candidate of the list goes at
+     row-major mini-position k (so a full candidate set reads 1 top-left …
+     9 bottom-right, a subset compacts left), centered in its mini-cell.
 
 Digit centering: center the text extent within the cell (both axes).
 

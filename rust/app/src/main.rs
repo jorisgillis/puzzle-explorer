@@ -2,7 +2,8 @@
 //!
 //! CLI surface mirrors `sudoku/main.rkt`: no args or `ui` launches the GUI,
 //! `generate <easy|medium|hard>`, `solve <81-char>`, `analyze <81-char>`.
-//! The egui app itself lands with ticket #17.
+
+mod ui;
 
 use clap::{Parser, Subcommand};
 use sudoku_core::{Difficulty, Grid, analyze, format_analysis, generate_random, solve};
@@ -20,7 +21,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Launch the egui GUI (ticket #17)
+    /// Launch the egui GUI
     Ui,
     /// Generate a puzzle of the given difficulty: easy | medium | hard
     Generate { difficulty: String },
@@ -90,5 +91,21 @@ fn run() -> i32 {
 }
 
 fn run_ui() -> i32 {
-    todo!("egui app — ticket #17")
+    let options = eframe::NativeOptions {
+        viewport: eframe::egui::ViewportBuilder::default()
+            .with_title("Puzzle Explorer - Sudoku")
+            .with_inner_size([520.0, 800.0]),
+        ..Default::default()
+    };
+    match eframe::run_native(
+        "sudoku",
+        options,
+        Box::new(|_cc| Ok(Box::new(ui::SudokuApp::new()))),
+    ) {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("ui error: {e}");
+            1
+        }
+    }
 }
