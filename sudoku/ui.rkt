@@ -103,9 +103,15 @@
       (send dc set-brush (make-object brush% (gray-level 0) 'transparent))
       (send dc set-pen (make-object pen% (gray-level 0) 2 'solid))
       (send dc draw-rectangle margin margin (* 9 cell-size) (* 9 cell-size)))
+    (define/private (draw-centered dc str cell-x cell-y cell-w cell-h)
+      (define-values (tw th _asc _desc) (send dc get-text-extent str))
+      (send dc draw-text str
+            (+ cell-x (/ (- cell-w tw) 2))
+            (+ cell-y (/ (- cell-h th) 2))))
     (define/private (draw-cells dc)
       (define big-font (make-object font% 22 'default 'normal 'bold))
       (define small-font (make-object font% 10 'default 'normal 'normal))
+      (define pencil-cell (quotient cell-size 3))
       (for ([i (in-range cell-count)])
         (define x (+ margin (* (col-of i) cell-size)))
         (define y (+ margin (* (row-of i) cell-size)))
@@ -115,8 +121,7 @@
           [(positive? pv)
            (send dc set-font big-font)
            (send dc set-text-foreground given-color)
-           (send dc draw-text (number->string pv)
-                 (+ x 16) (+ y 10))]
+           (draw-centered dc (number->string pv) x y cell-size cell-size)]
           [(positive? cv)
            (define conflict?
              (ormap (lambda (p)
@@ -126,17 +131,17 @@
                     (peers-of i)))
            (send dc set-font big-font)
            (send dc set-text-foreground (if conflict? error-color user-color))
-           (send dc draw-text (number->string cv)
-                 (+ x 16) (+ y 10))]
+           (draw-centered dc (number->string cv) x y cell-size cell-size)]
           [show-pencils?
            (define cs (candidates-of current i))
            (send dc set-font small-font)
            (send dc set-text-foreground (make-object color% 120 120 120))
            (for ([v (in-list cs)]
                  [k (in-naturals)])
-             (send dc draw-text (number->string v)
-                   (+ x 4 (* (remainder k 3) 15))
-                   (+ y 2 (* (quotient k 3) 15))))])))
+             (draw-centered dc (number->string v)
+                            (+ x (* (remainder k 3) pencil-cell))
+                            (+ y (* (quotient k 3) pencil-cell))
+                            pencil-cell pencil-cell))])))
     (super-new)))
 
 (define (launch-ui)
