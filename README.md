@@ -48,7 +48,9 @@ Puzzle strings are 81 characters, row-major, `0` (or `.`) for an empty cell.
 - The selected cell's row/column/box is highlighted.
 - Buttons: New Easy/Medium/Hard, Solve, Hint, Check, Analyze; a Pencils toggle
   shows candidate numbers in empty cells.
-- Analyze opens a report with the complexity metrics below.
+- Analyze toggles a live analysis panel with the complexity metrics below,
+  recomputed from the current board (givens plus your entries) on every change
+  while you play.
 
 ## Complexity metrics
 

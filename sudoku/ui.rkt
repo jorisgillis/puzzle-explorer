@@ -28,16 +28,19 @@
 
 (define sudoku-canvas%
   (class canvas%
-    (init-field puzzle current selected show-pencils?)
+    (init-field puzzle current selected show-pencils? [on-change (lambda () (void))])
+    (define/public (set-on-change! cb) (set! on-change cb))
     (define/public (set-puzzle! p)
       (set! puzzle p)
       (set! current (grid-copy p))
       (set! selected #f)
+      (on-change)
       (send this refresh))
     (define/public (get-current) current)
     (define/public (get-puzzle) puzzle)
     (define/public (set-solution-and-fill! sol)
       (set! current (grid-copy sol))
+      (on-change)
       (send this refresh))
     (define/public (toggle-pencils!)
       (set! show-pencils? (not show-pencils?))
@@ -49,10 +52,12 @@
          (define v (- (char->integer code) #x30))
          (when (and (<= 1 v 9) (zero? (grid-ref puzzle selected)))
            (grid-set! current selected v)
+           (on-change)
            (send this refresh))]
         [(and selected (memv code (list #\0 #\backspace 'delete))
               (zero? (grid-ref puzzle selected)))
          (grid-set! current selected 0)
+         (on-change)
          (send this refresh)]
         [(memv code '(left right up down))
          (move-selection code)]
@@ -146,7 +151,7 @@
 
 (define (launch-ui)
   (define frame
-    (new frame% [label "Puzzle Explorer - Sudoku"] [width (+ board-size 40)] [height (+ board-size 110)]))
+    (new frame% [label "Puzzle Explorer - Sudoku"] [width (+ board-size 40)] [height (+ board-size 220)]))
   (define board-panel (new vertical-panel% [parent frame] [alignment '(center center)]))
   (define canvas
     (new sudoku-canvas%
@@ -160,6 +165,36 @@
   (define controls (new horizontal-panel% [parent frame] [alignment '(center center)] [stretchable-width #t]))
   (define status (new message% [parent frame] [label "Generate a puzzle to begin"] [min-width 400]))
   (define solution #f)
+
+  ;; Live analysis panel, hosted in the main window (dialog% show can hang
+  ;; on Wayland setups). Recomputes the report from the current board
+  ;; (givens + your entries) every time the grid changes.
+  (define analysis-text (new text%))
+  (define analysis-view
+    (new editor-canvas% [parent frame] [editor analysis-text]
+         [min-width 460] [min-height 132] [style '(no-focus no-hscroll)]))
+  (send analysis-text lock #t)
+  (send analysis-view show #f)
+
+  (define (analysis-report)
+    (define cur (send canvas get-current))
+    (string-append
+     (format "Live analysis of the current board (~a)\n"
+             (cond [(not (valid? cur)) "conflicting entries present"]
+                   [(and solution (equal? cur solution)) "solved correctly"]
+                   [else "no conflicts so far"]))
+     (format-analysis (analyze cur))))
+
+  (define (update-analysis!)
+    (when (send analysis-view is-shown?)
+      (send analysis-text lock #f) ; lock makes the editor ignore even programmatic edits
+      (send analysis-text begin-edit-sequence)
+      (send analysis-text delete 0 (send analysis-text last-position))
+      (send analysis-text insert (analysis-report) 0)
+      (send analysis-text end-edit-sequence)
+      (send analysis-text lock #t)))
+
+  (send canvas set-on-change! (lambda () (update-analysis!)))
 
   (define (new-puzzle difficulty)
     (define-values (puzzle sol) (generate-puzzle difficulty))
@@ -196,6 +231,7 @@
                        (define puz (send canvas get-puzzle))
                        (unless (positive? (grid-ref puz target))
                          (grid-set! cur target (grid-ref solution target))
+                         (update-analysis!)
                          (send canvas refresh))
                        (send status set-label (format "Hint: cell ~a = ~a"
                                                       (add1 target) (grid-ref solution target))))))])
@@ -208,13 +244,10 @@
                      [else (send status set-label "No conflicts so far.")]))])
   (new button% [parent controls] [label "Analyze"]
        [callback (lambda (b e)
-                   (define report (format-analysis (analyze (send canvas get-puzzle))))
-                   (define dlg (new dialog% [label "Complexity Analysis"] [parent frame]
-                                    [width 420] [height 340]))
-                   (define vp (new vertical-panel% [parent dlg] [alignment '(left top)]))
-                   (for ([line (in-list (string-split report "\n"))])
-                     (new message% [parent vp] [label line]))
-                   (send dlg show #t))])
+                   (if (send analysis-view is-shown?)
+                       (send analysis-view show #f)
+                       (begin (send analysis-view show #t)
+                              (update-analysis!))))])
   (new check-box% [parent controls] [label "Pencils"]
        [callback (lambda (b e) (send canvas toggle-pencils!))])
 
