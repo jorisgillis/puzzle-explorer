@@ -20,6 +20,23 @@ const PENCIL: egui::Color32 = egui::Color32::from_rgb(120, 120, 120);
 const THIN_LINE: egui::Color32 = egui::Color32::from_rgb(160, 160, 160);
 const BLACK: egui::Color32 = egui::Color32::BLACK;
 
+/// Candidate heat overlay palette (SPEC-UI.md, map #20): one discrete color
+/// per candidate count 1..=9 (few = green, many = red), 0 = error red.
+pub fn heat_color(count: usize) -> egui::Color32 {
+    match count {
+        0 => egui::Color32::from_rgb(200, 30, 30),
+        1 => egui::Color32::from_rgb(150, 233, 150),
+        2 => egui::Color32::from_rgb(171, 233, 150),
+        3 => egui::Color32::from_rgb(191, 233, 150),
+        4 => egui::Color32::from_rgb(212, 233, 150),
+        5 => egui::Color32::from_rgb(233, 233, 150),
+        6 => egui::Color32::from_rgb(233, 212, 150),
+        7 => egui::Color32::from_rgb(233, 191, 150),
+        8 => egui::Color32::from_rgb(233, 171, 150),
+        _ => egui::Color32::from_rgb(233, 150, 150),
+    }
+}
+
 /// True when cell `i` holds a value that also appears in one of its peers.
 pub fn is_conflict(g: &Grid, i: usize) -> bool {
     let v = g.get(i);
@@ -48,6 +65,7 @@ pub struct SudokuApp {
     solution: Option<Grid>,
     selected: Option<usize>,
     show_pencils: bool,
+    show_heat: bool,
     show_analysis: bool,
     status: String,
     analysis: String,
@@ -62,6 +80,7 @@ impl SudokuApp {
             solution: None,
             selected: None,
             show_pencils: false,
+            show_heat: false,
             show_analysis: false,
             status: "Generate a puzzle to begin".to_string(),
             analysis: String::new(),
@@ -230,11 +249,22 @@ impl SudokuApp {
         let origin = rect.min;
         painter.rect_filled(rect, 0.0, egui::Color32::WHITE);
 
-        // highlights (under grid lines): peers first, selected cell on top
+        // highlights (under grid lines): peers first, then the heat overlay
+        // on empty cells, then the selected cell on top (SPEC-UI.md, map #20)
         if let Some(s) = self.selected {
             for &p in &PEERS[s] {
                 painter.rect_filled(Self::cell_rect(origin, p), 0.0, HIGHLIGHT);
             }
+        }
+        if self.show_heat {
+            for i in 0..81 {
+                if self.current.get(i) == 0 {
+                    let n = self.current.candidates(i).len();
+                    painter.rect_filled(Self::cell_rect(origin, i), 0.0, heat_color(n));
+                }
+            }
+        }
+        if let Some(s) = self.selected {
             painter.rect_filled(Self::cell_rect(origin, s), 0.0, SELECTED);
         }
 
@@ -362,6 +392,7 @@ impl eframe::App for SudokuApp {
                     self.analysis_dirty = true;
                 }
                 ui.checkbox(&mut self.show_pencils, "Pencils");
+                ui.checkbox(&mut self.show_heat, "Heat");
             });
             ui.add_space(4.0);
             ui.label(&self.status);
@@ -418,5 +449,47 @@ mod tests {
         cur.set(0, sol.get(0));
         assert_eq!(hint_target(&cur, &sol), Some(1));
         assert_eq!(hint_target(&sol, &sol), None);
+    }
+
+    #[test]
+    fn heat_color_matches_the_9_step_palette() {
+        let expected = [
+            (200, 30, 30),   // 0 candidates: error red
+            (150, 233, 150), // 1
+            (171, 233, 150), // 2
+            (191, 233, 150), // 3
+            (212, 233, 150), // 4
+            (233, 233, 150), // 5
+            (233, 212, 150), // 6
+            (233, 191, 150), // 7
+            (233, 171, 150), // 8
+            (233, 150, 150), // 9
+        ];
+        for (count, (r, g, b)) in expected.iter().enumerate() {
+            assert_eq!(
+                heat_color(count),
+                egui::Color32::from_rgb(*r, *g, *b),
+                "count {count}"
+            );
+        }
+    }
+
+    #[test]
+    fn heat_counts_come_from_the_current_board() {
+        // empty grid: every cell has 9 candidates; fill a peer of cell 0
+        let mut g = Grid::empty();
+        assert_eq!(g.candidates(0).len(), 9);
+        g.set(1, 5);
+        assert_eq!(g.candidates(0).len(), 8);
+        // a dead cell (no candidates) is possible once all 9 digits are
+        // taken by peers — here just check the count shrinks, not the color
+        let dead = {
+            let mut d = Grid::empty();
+            for (k, p) in PEERS[0].iter().take(9).enumerate() {
+                d.set(*p, (k + 1) as u8);
+            }
+            d.candidates(0).len()
+        };
+        assert_eq!(dead, 0);
     }
 }
