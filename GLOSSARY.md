@@ -70,6 +70,34 @@ measures of search effort.
 The property of a puzzle having exactly one solution, verified by counting
 solutions up to a small cap.
 
+**Solver contract**:
+The shared set of operations every solver in the solver gallery implements:
+solve, solve with search stats, and count solutions up to a cap.
+
+**Solver gallery**:
+The side-by-side collection of solver implementations behind one solver
+contract (`sudoku/solvers/` in Racket, `rust/core/src/solvers/` in Rust), kept
+for comparing algorithms; the production solver (`solver.rkt`, `solver.rs`)
+is untouched, and one gallery entry delegates to it.
+
+**Naive backtracking solver**:
+Backtracking search that scans cells 0-80 in order and tries digits 1-9 in
+order using grid candidates — no constraint propagation, no MRV. Distinct
+from "backtracking search" itself, which is the general technique.
+
+**Propagation + MRV solver**:
+Constraint propagation (naked/hidden singles) followed by MRV backtracking
+search — the production solver, exposed in the gallery through an adapter.
+
+**DLX solver**:
+Algorithm X with Dancing Links over the exact-cover matrix of 729 candidate
+placements by 324 constraint columns (cell, row-digit, column-digit, and
+box-digit groups); branches on the minimum-size column with O(1) cover/uncover.
+
+**Link updates**:
+The number of link removals/restorations a DLX search performs — Knuth's
+machine-independent cost metric for exact-cover search.
+
 ## Generating
 
 **Complete-grid generation**:
