@@ -6,7 +6,23 @@
          "generator.rkt"
          "complexity.rkt")
 
-(provide launch-ui)
+(provide launch-ui
+         heat-color)
+
+;; Candidate heat overlay palette (rust/SPEC-UI.md, map #20): one discrete
+;; color per candidate count 1..9 (few = green, many = red); 0 = error red.
+(define (heat-color n)
+  (case n
+    [(0) (make-object color% 200 30 30)]
+    [(1) (make-object color% 150 233 150)]
+    [(2) (make-object color% 171 233 150)]
+    [(3) (make-object color% 191 233 150)]
+    [(4) (make-object color% 212 233 150)]
+    [(5) (make-object color% 233 233 150)]
+    [(6) (make-object color% 233 212 150)]
+    [(7) (make-object color% 233 191 150)]
+    [(8) (make-object color% 233 171 150)]
+    [else (make-object color% 233 150 150)]))
 
 (define cell-size 48)
 (define margin 12)
@@ -28,7 +44,7 @@
 
 (define sudoku-canvas%
   (class canvas%
-    (init-field puzzle current selected show-pencils? [on-change (lambda () (void))])
+    (init-field puzzle current selected show-pencils? [show-heat? #f] [on-change (lambda () (void))])
     (define/public (set-on-change! cb) (set! on-change cb))
     (define/public (set-puzzle! p)
       (set! puzzle p)
@@ -44,6 +60,9 @@
       (send this refresh))
     (define/public (toggle-pencils!)
       (set! show-pencils? (not show-pencils?))
+      (send this refresh))
+    (define/public (toggle-heat!)
+      (set! show-heat? (not show-heat?))
       (send this refresh))
     (define/override (on-char event)
       (define code (send event get-key-code))
@@ -84,14 +103,26 @@
       (draw-grid-lines dc)
       (draw-cells dc))
     (define/private (draw-highlights dc)
+      (send dc set-pen (make-object pen% (gray-level 0) 1 'transparent))
       (when selected
-        (send dc set-pen (make-object pen% (gray-level 0) 1 'transparent))
         (send dc set-brush (make-object brush% highlight-color 'solid))
         (for ([p (in-list (peers-of selected))])
           (send dc draw-rectangle
                 (+ margin (* (col-of p) cell-size))
                 (+ margin (* (row-of p) cell-size))
-                cell-size cell-size))
+                cell-size cell-size)))
+      ;; heat overlay on empty cells: over the peer highlight, under the
+      ;; selected cell (rust/SPEC-UI.md, map #20)
+      (when show-heat?
+        (for ([i (in-range cell-count)])
+          (when (zero? (grid-ref current i))
+            (send dc set-brush
+                  (make-object brush% (heat-color (length (candidates-of current i))) 'solid))
+            (send dc draw-rectangle
+                  (+ margin (* (col-of i) cell-size))
+                  (+ margin (* (row-of i) cell-size))
+                  cell-size cell-size))))
+      (when selected
         (send dc set-brush (make-object brush% selected-color 'solid))
         (send dc draw-rectangle
               (+ margin (* (col-of selected) cell-size))
@@ -160,6 +191,7 @@
          [current (make-grid)]
          [selected #f]
          [show-pencils? #f]
+         [show-heat? #f]
          [min-width board-size]
          [min-height board-size]))
   (define controls (new horizontal-panel% [parent frame] [alignment '(center center)] [stretchable-width #t]))
@@ -250,6 +282,8 @@
                               (update-analysis!))))])
   (new check-box% [parent controls] [label "Pencils"]
        [callback (lambda (b e) (send canvas toggle-pencils!))])
+  (new check-box% [parent controls] [label "Heat"]
+       [callback (lambda (b e) (send canvas toggle-heat!))])
 
   (new-puzzle 'medium)
   (send frame show #t))
