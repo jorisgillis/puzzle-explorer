@@ -1,0 +1,12 @@
+# SCRATCH experiment crate for wayfinder ticket #27 (research only, not part of
+# the rust/ workspace). Measures technique-detection cost using sudoku-core.
+[package]
+name = "technique-cost-scratch"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+sudoku-core = { path = "../../../rust/core" }
+rand = "0.10"
+
+[workspace]
