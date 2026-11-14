@@ -14,7 +14,7 @@ see #9).
   1. **Board** (centered), square of `board-size` px.
   2. **Controls row** (centered, horizontal): buttons
      `New Easy`, `New Medium`, `New Hard`, `Solve`, `Hint`, `Check`,
-     `Analyze`, then a `Pencils` checkbox.
+     `Analyze`, then `Pencils` and `Heat` checkboxes.
   3. **Status line**: single-line label, initial text
      `Generate a puzzle to begin`.
   4. **Analysis panel**: read-only multi-line text, initially **hidden**;
@@ -103,6 +103,35 @@ Option<Grid>`, status string.
 - **Analyze**: toggle visibility of the analysis panel; when becoming
   visible, recompute it (see below).
 - **Pencils** checkbox: toggle `show-pencils`; redraw.
+- **Heat** checkbox: toggle `show-heat`; redraw. See "Candidate heat overlay".
+
+## Candidate heat overlay (map #20, spec ticket #21)
+
+Optional per-cell background fill encoding **how many candidates remain**
+for that cell on the **current board** (givens + user entries), computed
+live at paint time via `candidates(current, i)` — no cached state.
+`sudoku/ui.rkt` is the Racket reference for the identical behavior.
+
+- **Applies to empty cells only.** Filled cells (givens and user entries)
+  never get a heat fill; they render exactly as without Heat.
+- **Palette** — one discrete color per candidate count (few = green,
+  many = red):
+
+  | count | RGB | | count | RGB |
+  |---|---|---|---|---|
+  | 1 | (150, 233, 150) | | 6 | (233, 212, 150) |
+  | 2 | (171, 233, 150) | | 7 | (233, 191, 150) |
+  | 3 | (191, 233, 150) | | 8 | (233, 171, 150) |
+  | 4 | (212, 233, 150) | | 9 | (233, 150, 150) |
+  | 5 | (233, 233, 150) | | 0 (dead cell) | (200, 30, 30) error red |
+
+- **Draw order** (inside the existing paint pipeline): white background →
+  peer highlight → **heat fill on empty cells** → selected-cell fill on top
+  → grid lines → digits/pencil marks. So Heat covers the peer highlight on
+  empty cells, the selected cell keeps its selected color, and pencil marks
+  (when Pencils is also on) draw on top of the heat fill.
+- **GUI-only**: no CLI subcommand, no change to `analyze`/metrics. The
+  candidate counts are the same ones the analysis panel aggregates.
 
 ## Live analysis panel
 
