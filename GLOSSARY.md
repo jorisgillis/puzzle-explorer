@@ -112,3 +112,9 @@ The currently selected cell, with its row, column, and box tinted.
 **Live analysis**:
 The complexity report recomputed from the current board (givens plus user entries)
 on every change.
+
+**Candidate heat overlay**:
+An optional per-cell background color encoding how many candidates remain for an
+empty cell on the current board: green for 1 candidate up to red for 9 (one discrete
+color per count), error red for 0 (a dead cell). Recomputed live on every change;
+filled cells are never colored.
