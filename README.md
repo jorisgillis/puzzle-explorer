@@ -34,6 +34,6 @@ The Rust app has the same subcommands: `cd rust && cargo run -- ui`.
 ## Read more
 
 - [Playing the GUI](docs/playing.md) — controls, pencils, heat overlay, live analysis panel, and the puzzle-string format with puzzle → solution boards.
-- [Solving and measuring difficulty](docs/solving.md) — constraint propagation, MRV backtracking, uniqueness checks, the complexity metrics behind `analyze`, and sample output.
+- [Solving and measuring difficulty](docs/solving.md) — constraint propagation, MRV backtracking, uniqueness checks, and the complexity metrics behind `analyze`, with illustrations, worked examples, and a real output gallery.
 - [Implementations, layout, and tests](docs/implementations.md) — the Racket and Rust workspaces, requirements, parity fixtures, and how to run the test suites.
 - [GLOSSARY.md](GLOSSARY.md) — the shared vocabulary used across code, docs, and the issue tracker.
