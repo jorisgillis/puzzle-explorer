@@ -204,3 +204,11 @@ An optional per-cell background color encoding how many candidates remain for an
 empty cell on the current board: green for 1 candidate up to red for 9 (one discrete
 color per count), error red for 0 (a dead cell). Recomputed live on every change;
 filled cells are never colored.
+
+## Documentation
+
+**Explainer page**:
+A page under `docs/` following the reusable template in `docs/README.md`
+(Question / TL;DR / Deep dive / Diagram / Worked example / Goofy image /
+Complexity callout / See the code / Further reading), written for a public
+audience: playful tone, every factual claim cited or code-linked.
