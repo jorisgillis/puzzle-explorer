@@ -6,6 +6,7 @@ pub mod complexity;
 pub mod generator;
 pub mod grid;
 pub mod solver;
+pub mod solvers;
 
 pub use complexity::{Analysis, analyze, difficulty_score, format_analysis};
 pub use generator::{
@@ -13,3 +14,4 @@ pub use generator::{
 };
 pub use grid::{CELL_COUNT, Grid, PEERS, ParseGridError, UNITS};
 pub use solver::{SearchStats, count_solutions, propagate, solve, solve_with_stats};
+pub use solvers::{Solver, all_solvers};
