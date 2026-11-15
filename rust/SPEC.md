@@ -132,3 +132,103 @@ and messages are the app crate's job.
 
 GUI, CLI parsing, eframe/egui, clap — all belong to the `app` crate
 (tickets #14, #17). No thiserror/anyhow/logging for the core scope (#10).
+
+## 9. Form-constrained generation, technique analysis, and strategy measurement (wayfinder map #25)
+
+Semantics locked by map #25's closed decision tickets
+[#28](https://github.com/jorisgillis/puzzle-explorer/issues/28) (technique
+set and depth scale),
+[#29](https://github.com/jorisgillis/puzzle-explorer/issues/29) (generator
+forms),
+[#30](https://github.com/jorisgillis/puzzle-explorer/issues/30) (measurement
+model),
+[#31](https://github.com/jorisgillis/puzzle-explorer/issues/31) (difficulty
+bands), with evidence from research tickets
+[#26](https://github.com/jorisgillis/puzzle-explorer/issues/26) and
+[#27](https://github.com/jorisgillis/puzzle-explorer/issues/27). The Racket
+side (`sudoku/`) implements the same semantics; parity is pinned by tests
+and fixtures. Vocabulary: root [GLOSSARY.md](../GLOSSARY.md), "Techniques"
+section.
+
+### 9.1 Technique analyzer (core: new `techniques` module; Racket: `solver.rkt` extension)
+
+- Locked technique set, totally ordered in human difficulty order: L1 naked
+  single, L2 hidden single, L3 locked candidates pointing, L4 locked
+  candidates claiming, L5 naked pair, L6 hidden pair, L7 naked triple,
+  L8 hidden triple, L9 X-Wing. Level 10 = "requires search".
+- L1–L2 detection reuses the existing `propagate` fixpoint (naked + hidden
+  singles); no separate L1/L2 detectors. L3–L9 are new deterministic scans
+  over `UNITS`/`PEERS`.
+- `solution_path(g) -> Vec<TechniqueStep>` — greedy easiest-step-first: at
+  each state apply the easiest applicable technique (L1 first), record the
+  step, repeat until solved or stuck. For a totally ordered set of sound
+  rules the greedy max level equals the path-existence minimum (research
+  #26), so depth = max level applied; stuck before solved → depth 10.
+- `technique_depth(g) -> Option<u8>` and per-technique application counts
+  (tally of the path) — computed only for uniquely solvable grids; otherwise
+  `None`, reported as "n/a (not unique)".
+
+### 9.2 Analysis fields (`complexity.rs` / `complexity.rkt`)
+
+`Analysis` gains: `technique_depth: Option<u8>` (formatted with its tier
+label), `required_technique: Option<Technique>`, `technique_counts` (per
+L1–L9 along the solution path), and `difficulty_band` (§9.5).
+`format_analysis` prints the new lines after the existing ones. The same
+text is the single source for CLI `analyze`, CLI `generate` output, and both
+GUI live analysis panels (`sudoku/ui.rkt`, `rust/app/src/ui.rs`) — full
+metrics everywhere, no verbosity split.
+
+### 9.3 Generation forms (`generator.rs` / `generator.rkt`, app CLIs)
+
+- CLI, identical in `sudoku/main.rkt` and `rust/app/src/main.rs`:
+  `generate <easy|medium|hard> [--max-depth N] [--requires TECH] [--band NAME]`
+  - `TECH` ∈ `naked-single | hidden-single | pointing | claiming | naked-pair
+    | hidden-pair | naked-triple | hidden-triple | x-wing`
+  - `N` ∈ 1..=10 (solvable up to level N)
+  - `NAME` ∈ `gentle | moderate | tough | diabolical | extreme`
+- Combination: AND. `--max-depth` / `--requires` / `--band` are hard
+  candidate filters; the givens target stays soft (best-of attempts, fewest
+  givens wins), exactly as the no-flag path.
+- Algorithm for flagged calls: constructive plant-and-carve — when
+  `--requires TECH` is given, plant TECH's pattern in the grid, complete it,
+  carve clues keeping a unique solution; `--max-depth` / `--band` / givens
+  filter candidates within the attempt cap. Every emitted puzzle is verified
+  by the technique analyzer (§9.1). No-flag `generate <diff>` keeps the
+  legacy path (§4) unchanged.
+- Failure: after 100 attempts without a matching candidate, print a clear
+  error and exit non-zero, in both CLIs.
+- `generate` output additionally prints the puzzle's measured technique
+  depth and required technique next to the analysis block.
+- GUI controls for the form flags: follow-on ticket
+  [#44](https://github.com/jorisgillis/puzzle-explorer/issues/44), both GUIs.
+
+### 9.4 Aggregate measurement (app CLIs)
+
+- `measure <easy|medium|hard> [--max-depth N] [--requires TECH] [--band NAME] --count N`
+  in both CLIs, byte-identical output format: aligned text tables of puzzles
+  per depth level, puzzles per required technique, mean per-technique
+  application counts, and a per-band breakdown.
+
+### 9.5 Difficulty bands
+
+| Band | Score range |
+|---|---|
+| gentle | 0–19 |
+| moderate | 20–39 |
+| tough | 40–59 |
+| diabolical | 60–79 |
+| extreme | 80–100 |
+
+- Bands are orthogonal to the givens targets easy/medium/hard (40/32/26).
+  `--band NAME` is a hard form filter (§9.3); `difficulty_band` is reported
+  per puzzle (§9.2) and aggregated by `measure` (§9.4).
+- The band table is identical in Racket and Rust and pinned by parity tests.
+
+### 9.6 Testing
+
+- Unit tests per technique on known patterns (each of L1–L9 fires and is
+  counted correctly); depth/counts/band fields added to the parity fixtures
+  for the fixed puzzle set (`core/tests/parity.rs` +
+  `tests/fixtures/parity.json`); CLI contract tests for the new flags,
+  `--requires`/`--band` validation, and the 100-attempt error path, in both
+  implementations.
