@@ -1,0 +1,7 @@
+# named extreme puzzles - one 81-char puzzle per line, '.' = empty
+# readme: the puzzle from this repo's README
+# escargot: AI Escargot, Inkala 2006 (via https://www.norvig.com/sudoku.html)
+# grid2: Norvig's 'hardest for brute force' (https://www.norvig.com/sudoku.html)
+530070000600195000098000060800060003400803001700020006060000280000419005000080079
+100007090030020008009600500005300900010080002600004000300000010040000007007000300
+4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......
