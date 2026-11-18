@@ -212,3 +212,14 @@ A page under `docs/` following the reusable template in `docs/README.md`
 (Question / TL;DR / Deep dive / Diagram / Worked example / Goofy image /
 Complexity callout / See the code / Further reading), written for a public
 audience: playful tone, every factual claim cited or code-linked.
+
+**Benchmark harness**:
+The per-language runner that solves a shared fixture set with every solver in
+the solver gallery and records wall time, solver nodes, max depth (plus link
+updates for the DLX solver): `sudoku/solvers/benchmark.rkt` in Racket,
+`rust/core/benches/bench.rs` (criterion) in Rust.
+
+**Benchmark fixture set**:
+A committed plain-text file of 81-character puzzles shared by both benchmark
+harnesses (`tests/fixtures/bench-*.txt`): Norvig's top95 hard set, Royle's
+49,151 17-clue collection, and named extreme puzzles.

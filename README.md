@@ -13,17 +13,24 @@ sudoku/           Racket implementation
   info.rkt        package metadata (installable via raco pkg)
   grid.rkt        9x9 grid model, validation, string/pretty rendering
   solver.rkt      MRV backtracking solver, constraint propagation, solution counting
+  solvers.rkt     solver gallery registry: dispatch by name to the solvers below
+  solvers/        solver gallery: naive.rkt, propagation-mrv.rkt (adapter over solver.rkt), dlx.rkt
   generator.rkt   complete-grid generation + clue removal with uniqueness guarantee
   complexity.rkt  complexity metrics and 0-100 difficulty score
   ui.rkt          native racket/gui front end
   main.rkt        CLI entry point
 rust/             Rust implementation (cargo workspace)
-  core/           sudoku-core lib crate: grid, solver, generator, complexity
+  core/           sudoku-core lib crate: grid, solver, generator, complexity, solvers/ gallery
   app/            sudoku bin crate: clap CLI + egui GUI
   SPEC.md         core crate spec
   SPEC-UI.md      egui app behavior spec (ported from sudoku/ui.rkt)
 tests/            rackunit test suites (raco test tests/)
+  fixtures/       shared benchmark fixture sets (bench-top95, bench-royle17, bench-extremes)
+docs/             explainer pages (solvers, generation, complexity) + assets — index in docs/README.md
 ```
+
+Explainer docs on the algorithms (solver shootout with benchmarks, puzzle
+generation, NP-completeness) live in [`docs/`](docs/README.md).
 
 ## Requirements
 
